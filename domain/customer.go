@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/dapinto8/banking/errs"
+
 type Customer struct {
 	Id          string
 	Name        string
@@ -10,6 +12,6 @@ type Customer struct {
 }
 
 type CustomerRepository interface {
-	FindAll() ([]Customer, error)
-	ById(string) (*Customer, error)
+	FindAll(status string) ([]Customer, *errs.AppError)
+	ById(string) (*Customer, *errs.AppError)
 }

@@ -2,8 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"encoding/xml"
-	"fmt"
 	"net/http"
 
 	"github.com/dapinto8/banking/service"
@@ -15,17 +13,14 @@ type CustomerHandler struct {
 }
 
 func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Request) {
-	customers, _ := ch.service.GetAllCustomer()
-
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customers)
+	status := r.URL.Query().Get("status")
+	customers, err := ch.service.GetAllCustomer(status)
+	if err != nil {
+		writeRespoonse(w, err.Code, err.AsMessage())
 		return
 	}
 
-	w.Header().Add("Content-type", "application/json")
-	json.NewEncoder(w).Encode(customers)
-
+	writeRespoonse(w, http.StatusOK, customers)
 }
 
 func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
@@ -34,11 +29,17 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, err.Error())
+		writeRespoonse(w, err.Code, err.AsMessage())
+		return
 	}
 
-	w.Header().Add("Content-type", "application/json")
-	json.NewEncoder(w).Encode(customer)
+	writeRespoonse(w, http.StatusOK, customer)
+}
 
+func writeRespoonse(w http.ResponseWriter, code int, data interface{}) {
+	w.Header().Add("Content-type", "application/json")
+	w.WriteHeader(code)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		panic(err)
+	}
 }

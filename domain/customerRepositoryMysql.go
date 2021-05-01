@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/dapinto8/banking/errs"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -12,21 +13,29 @@ type CustomerRepositoryMysql struct {
 	client *sql.DB
 }
 
-func (db CustomerRepositoryMysql) FindAll() ([]Customer, error) {
+func (db CustomerRepositoryMysql) FindAll(status string) ([]Customer, *errs.AppError) {
+	var rows *sql.Rows
+	var err error
+	var findAllSql string
+	if status == "" {
+		findAllSql = "select customer_id, name, city, zipcode, date_of_birth, status from customers"
+		rows, err = db.client.Query(findAllSql)
+	} else {
+		findAllSql = "select customer_id, name, city, zipcode, date_of_birth, status from customers where status = ?"
+		rows, err = db.client.Query(findAllSql, status)
+	}
 
-	findAllSql := "select customer_id, name, city, zipcode, date_of_birth, status from customers"
-
-	rows, err := db.client.Query(findAllSql)
 	if err != nil {
-		log.Println("Error querying customer table")
+		return nil, errs.NewUnexpectedError("Error querying customer table")
 	}
 
 	customers := make([]Customer, 0)
 	for rows.Next() {
 		var c Customer
+
 		err := rows.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
 		if err != nil {
-			log.Println("Error scanning customers")
+			return nil, errs.NewUnexpectedError("Error scanning customers")
 		}
 
 		customers = append(customers, c)
@@ -35,15 +44,18 @@ func (db CustomerRepositoryMysql) FindAll() ([]Customer, error) {
 	return customers, nil
 }
 
-func (db CustomerRepositoryMysql) ById(id string) (*Customer, error) {
+func (db CustomerRepositoryMysql) ById(id string) (*Customer, *errs.AppError) {
 	customerSql := "select customer_id, name, city, zipcode, date_of_birth, status from customers where customer_id = ?"
 
 	var c Customer
 	row := db.client.QueryRow(customerSql, id)
 	err := row.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateofBirth, &c.Status)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errs.NewNotFoundError("Customer not found")
+		}
 		log.Println("Error scanning customer" + err.Error())
-		return nil, err
+		return nil, errs.NewUnexpectedError("Unexpected database error")
 	}
 
 	return &c, nil

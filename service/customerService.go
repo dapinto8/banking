@@ -1,21 +1,24 @@
 package service
 
-import "github.com/dapinto8/banking/domain"
+import (
+	"github.com/dapinto8/banking/domain"
+	"github.com/dapinto8/banking/errs"
+)
 
 type CustomerService interface {
-	GetAllCustomer() ([]domain.Customer, error)
-	GetCustomer(string) (*domain.Customer, error)
+	GetAllCustomer(status string) ([]domain.Customer, *errs.AppError)
+	GetCustomer(id string) (*domain.Customer, *errs.AppError)
 }
 
 type DefaultCustomerService struct {
 	repository domain.CustomerRepository
 }
 
-func (s DefaultCustomerService) GetAllCustomer() ([]domain.Customer, error) {
-	return s.repository.FindAll()
+func (s DefaultCustomerService) GetAllCustomer(status string) ([]domain.Customer, *errs.AppError) {
+	return s.repository.FindAll(status)
 }
 
-func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, error) {
+func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, *errs.AppError) {
 	return s.repository.ById(id)
 }
 
