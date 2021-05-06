@@ -31,3 +31,11 @@ func init() {
 func Info(message string, fields ...interface{}) {
 	sugar.Infow(message, fields...)
 }
+
+func Debug(message string, fields ...interface{}) {
+	sugar.Debugw(message, fields...)
+}
+
+func Error(message string, fields ...interface{}) {
+	sugar.Errorw(message, fields...)
+}
