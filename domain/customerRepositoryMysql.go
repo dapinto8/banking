@@ -2,6 +2,8 @@ package domain
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/dapinto8/banking/errs"
@@ -52,7 +54,14 @@ func (db CustomerRepositoryMysql) ById(id string) (*Customer, *errs.AppError) {
 }
 
 func NewCustomerRepositoryMysql() CustomerRepositoryMysql {
-	client, err := sqlx.Open("mysql", "root:root@tcp(localhost:3306)/banking")
+	dbUser := os.Getenv("MYSQL_USER")
+	dbPassword := os.Getenv("MYSQL_PASSWORD")
+	dbHost := os.Getenv("MYSQL_HOST")
+	dbPort := os.Getenv("MYSQL_PORT")
+	dbName := os.Getenv("MYSQL_DB_NAME")
+
+	dataSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
+	client, err := sqlx.Open("mysql", dataSource)
 	if err != nil {
 		panic(err)
 	}
