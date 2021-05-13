@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/dapinto8/banking/service"
@@ -34,12 +33,4 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeRespoonse(w, http.StatusOK, customer)
-}
-
-func writeRespoonse(w http.ResponseWriter, code int, data interface{}) {
-	w.Header().Add("Content-type", "application/json")
-	w.WriteHeader(code)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		panic(err)
-	}
 }

@@ -2,9 +2,6 @@ package domain
 
 import (
 	"database/sql"
-	"fmt"
-	"os"
-	"time"
 
 	"github.com/dapinto8/banking/errs"
 	"github.com/dapinto8/banking/logger"
@@ -53,22 +50,7 @@ func (db CustomerRepositoryMysql) ById(id string) (*Customer, *errs.AppError) {
 	return &customer, nil
 }
 
-func NewCustomerRepositoryMysql() CustomerRepositoryMysql {
-	dbUser := os.Getenv("MYSQL_USER")
-	dbPassword := os.Getenv("MYSQL_PASSWORD")
-	dbHost := os.Getenv("MYSQL_HOST")
-	dbPort := os.Getenv("MYSQL_PORT")
-	dbName := os.Getenv("MYSQL_DB_NAME")
+func NewCustomerRepositoryMysql(dbClient *sqlx.DB) CustomerRepositoryMysql {
 
-	dataSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
-	client, err := sqlx.Open("mysql", dataSource)
-	if err != nil {
-		panic(err)
-	}
-
-	client.SetConnMaxLifetime(time.Minute * 3)
-	client.SetMaxOpenConns(10)
-	client.SetMaxIdleConns(10)
-
-	return CustomerRepositoryMysql{client}
+	return CustomerRepositoryMysql{dbClient}
 }
