@@ -21,16 +21,41 @@ func (ah *AccountHandler) NewAccount(w http.ResponseWriter, r *http.Request) {
 	var request dto.NewAccountRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		writeRespoonse(w, http.StatusBadRequest, err.Error())
+		writeResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	request.CustomerId = customerId
 
 	account, appError := ah.service.NewAccount(request)
 	if appError != nil {
-		writeRespoonse(w, appError.Code, appError.AsMessage())
+		writeResponse(w, appError.Code, appError.AsMessage())
 		return
 	}
 
-	writeRespoonse(w, http.StatusAccepted, account)
+	writeResponse(w, http.StatusAccepted, account)
+}
+
+func (ah *AccountHandler) MakeTransaction(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	customerId := vars["customer_id"]
+	accountId := vars["account_id"]
+
+	var request dto.TransactionRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		writeResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	request.AccountId = accountId
+	request.CustomerId = customerId
+
+	transaction, appError := ah.service.MakeTransaction(request)
+
+	if appError != nil {
+		writeResponse(w, appError.Code, appError.AsMessage())
+		return
+	}
+
+	writeResponse(w, http.StatusOK, transaction)
+
 }

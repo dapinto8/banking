@@ -8,10 +8,11 @@ import (
 var sugar *zap.SugaredLogger
 
 func config() (*zap.Logger, error) {
-	config := zap.NewProductionConfig()
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "timestamp"
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	config := zap.NewProductionConfig()
 	config.EncoderConfig = encoderConfig
 
 	return config.Build(zap.AddCallerSkip(1))

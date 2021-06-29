@@ -51,6 +51,5 @@ func (db CustomerRepositoryMysql) ById(id string) (*Customer, *errs.AppError) {
 }
 
 func NewCustomerRepositoryMysql(dbClient *sqlx.DB) CustomerRepositoryMysql {
-
 	return CustomerRepositoryMysql{dbClient}
 }

@@ -40,7 +40,7 @@ func getDbClient() *sqlx.DB {
 	return client
 }
 
-func writeRespoonse(w http.ResponseWriter, code int, data interface{}) {
+func writeResponse(w http.ResponseWriter, code int, data interface{}) {
 	w.Header().Add("Content-type", "application/json")
 	w.WriteHeader(code)
 	if err := json.NewEncoder(w).Encode(data); err != nil {

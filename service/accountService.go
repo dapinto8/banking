@@ -8,8 +8,11 @@ import (
 	"github.com/dapinto8/banking/errs"
 )
 
+const dbTSLayout = "2006-01-02 15:04:05"
+
 type AccountService interface {
 	NewAccount(dto.NewAccountRequest) (*dto.NewAccountResponse, *errs.AppError)
+	MakeTransaction(dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError)
 }
 
 type DefaultAccountService struct {
@@ -36,7 +39,39 @@ func (s DefaultAccountService) NewAccount(req dto.NewAccountRequest) (*dto.NewAc
 		return nil, err
 	}
 
-	response := newAccount.ToNewAccountResponseDto()
+	response := newAccount.ToResponseDto()
+	return &response, nil
+}
+
+func (s DefaultAccountService) MakeTransaction(req dto.TransactionRequest) (*dto.TransactionResponse, *errs.AppError) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	if req.IsTransactionTypeWithdrawal() {
+		account, err := s.repository.FindBy(req.AccountId)
+		if err != nil {
+			return nil, err
+		}
+		if !account.CanWithdraw(req.Amount) {
+			return nil, errs.NewValidationError("Insufficient balance in the account")
+		}
+	}
+
+	t := domain.Transaction{
+		AccountId:       req.AccountId,
+		Amount:          req.Amount,
+		TransactionType: req.TransactionType,
+		TransactionDate: time.Now().Format(dbTSLayout),
+	}
+
+	transaction, appError := s.repository.SaveTransaction(t)
+	if appError != nil {
+		return nil, appError
+	}
+
+	response := transaction.ToResponseDto()
 	return &response, nil
 }
 

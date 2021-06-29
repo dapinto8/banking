@@ -15,11 +15,11 @@ func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Reques
 	status := r.URL.Query().Get("status")
 	customers, err := ch.service.GetAllCustomer(status)
 	if err != nil {
-		writeRespoonse(w, err.Code, err.AsMessage())
+		writeResponse(w, err.Code, err.AsMessage())
 		return
 	}
 
-	writeRespoonse(w, http.StatusOK, customers)
+	writeResponse(w, http.StatusOK, customers)
 }
 
 func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +28,9 @@ func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
-		writeRespoonse(w, err.Code, err.AsMessage())
+		writeResponse(w, err.Code, err.AsMessage())
 		return
 	}
 
-	writeRespoonse(w, http.StatusOK, customer)
+	writeResponse(w, http.StatusOK, customer)
 }
